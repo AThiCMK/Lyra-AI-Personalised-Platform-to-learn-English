@@ -1,0 +1,634 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+        --primary-color: #58a6ff;
+        --primary-dark: #1f6feb;
+        --accent-color: #7ee787;
+        --bg-dark: #0d1117;
+        --bg-darker: #161b22;
+        --text-primary: #c9d1d9;
+        --text-secondary: #8b949e;
+        --border-color: #30363d;
+        --card-bg: rgba(22, 27, 34, 0.8);
+        --success-color: #238636;
+        --heading-gradient: linear-gradient(135deg,
+            #FF1493 0%,      /* Deep Pink */
+            #9400D3 20%,     /* Dark Violet */
+            #4B0082 40%,     /* Indigo */
+            #0000FF 60%,     /* Blue */
+            #00BFFF 80%,     /* Deep Sky Blue */
+            #00FFFF 100%     /* Cyan */
+        );
+    }
+
+    body {
+        background-color: var(--bg-dark);
+        color: var(--text-primary);
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        height: 100vh;
+        perspective: 1500px;
+        background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
+        overflow: hidden;
+    }
+
+    .login-container {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        box-sizing: border-box;
+        transform: translateY(-2rem);
+    }
+
+    .login-box {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        padding: 4rem;
+        border-radius: 20px;
+        width: 100%;
+        max-width: 500px;
+        position: relative;
+        border: 1px solid var(--border-color);
+        transform-style: preserve-3d;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .login-box:hover {
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+    }
+
+    .login-box h2 {
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: var(--primary-color);
+        font-weight: 700;
+        position: relative;
+    }
+
+    .login-box h2[data-text]::before {
+        display: none;
+    }
+
+    .login-box form p {
+        margin-bottom: 2rem;
+        transform-style: preserve-3d;
+    }
+
+    .login-box form label {
+        display: block;
+        margin-bottom: 0.8rem;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        font-weight: 500;
+        transform: translateZ(10px);
+        letter-spacing: -0.3px;
+    }
+
+    .login-box form input {
+        width: 100%;
+        padding: 1rem 1.2rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: rgba(22, 27, 34, 0.6);
+        color: var(--text-primary);
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        transform: translateZ(5px);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .login-box form input:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        transform: translateZ(15px);
+        box-shadow: 0 0 0 2px rgba(126, 231, 135, 0.1);
+    }
+
+    .password-field {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 0.8rem;
+        top: 60%;
+        transform: translateY(-40%);
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .toggle-password:hover {
+        color: var(--text-primary);
+    }
+
+    .password-field input {
+        padding-right: 2.8rem;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 1.2rem;
+        margin-top: 2rem;
+        font-size: 1.2rem;
+        letter-spacing: 0.5px;
+        border-radius: 12px;
+        background: var(--success-color);
+        color: var(--text-primary);
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .btn-primary:hover {
+        background: var(--accent-color);
+        transform: translateY(-2px);
+    }
+
+    .btn-primary:active {
+        transform: translateY(1px);
+    }
+
+    .registration-links {
+        display: flex;
+        gap: 2rem;
+        margin-top: 3rem;
+        justify-content: center;
+        perspective: 2000px;
+        transform-style: preserve-3d;
+    }
+
+    .register-btn {
+        padding: 1rem 1.5rem;
+        text-decoration: none;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        overflow: hidden;
+        opacity: 0.75;
+        min-width: 180px;
+        transform: translateZ(0) rotateY(0);
+        animation: buttonIdle 4s ease-in-out infinite;
+    }
+
+    @keyframes buttonIdle {
+        0%, 100% {
+            transform: translateZ(0) rotateY(0);
+        }
+
+        50% {
+            transform: translateZ(15px) rotateY(5deg);
+        }
+    }
+
+    .register-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border: 1.5px solid;
+        border-radius: 12px;
+        transition: all 0.4s ease;
+        transform: translateZ(-1px);
+    }
+
+    .register-btn::after {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 14px;
+        background: currentColor;
+        opacity: 0;
+        transform: translateZ(-15px);
+        transition: all 0.4s ease;
+    }
+
+    .faculty-btn {
+        color: var(--primary-color);
+        animation-delay: -1s;
+    }
+
+    .student-btn {
+        color: var(--accent-color);
+        animation-delay: -2s;
+    }
+
+    .register-btn:hover {
+        opacity: 1;
+        transform: translateZ(40px) rotateY(-15deg);
+        animation: none;
+    }
+
+    .register-btn:hover::before {
+        transform: translateZ(20px) scale(0.95);
+    }
+
+    .register-btn:hover::after {
+        opacity: 0.1;
+        transform: translateZ(-25px) scale(1.15);
+    }
+
+    .register-btn span {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-style: preserve-3d;
+    }
+
+    .register-btn:hover span {
+        transform: translateZ(10px);
+    }
+
+    .register-btn i {
+        font-size: 1rem;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateZ(0) rotateY(0);
+        backface-visibility: visible;
+        transform-style: preserve-3d;
+        display: inline-block;
+    }
+
+    .register-btn:hover i {
+        animation: iconSpin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes iconSpin {
+        0% {
+            transform: translateZ(20px) rotateY(0deg);
+        }
+
+        50% {
+            transform: translateZ(30px) rotateY(180deg);
+        }
+
+        100% {
+            transform: translateZ(20px) rotateY(360deg);
+        }
+    }
+
+    .register-btn:not(:hover) i {
+        animation: none;
+        transition: transform 0.3s ease-out;
+        transform: translateZ(0) rotateY(0);
+    }
+
+    .registration-links:hover .register-btn:not(:hover) {
+        opacity: 0.4;
+        transform: translateZ(-20px) rotateY(10deg);
+    }
+
+    @media (max-width: 600px) {
+        .login-box {
+            padding: 2.5rem 2rem;
+            margin: 1rem;
+        }
+        .login-box h2 {
+            font-size: 2.4rem;
+        }
+        .registration-links {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .register-btn {
+            width: 100%;
+            text-align: center;
+            padding: 1.2rem;
+            font-size: 1.2rem;
+        }
+    }
+
+    /* Enhanced 3D Background */
+    .background-3d {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: -2;
+        overflow: hidden;
+        background: linear-gradient(45deg, var(--bg-color) 0%, var(--primary-color) 100%);
+    }
+
+    .cube-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        perspective: 1000px;
+        z-index: -1;
+    }
+
+    .cube {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        transform-style: preserve-3d;
+        animation: rotateCube 20s infinite linear;
+    }
+
+    .cube-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+    }
+
+    .cube-front  { transform: translateZ(50px); }
+    .cube-back   { transform: translateZ(-50px) rotateY(180deg); }
+    .cube-right  { transform: rotateY(90deg) translateZ(50px); }
+    .cube-left   { transform: rotateY(-90deg) translateZ(50px); }
+    .cube-top    { transform: rotateX(90deg) translateZ(50px); }
+    .cube-bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+    @keyframes rotateCube {
+        0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+        100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+    }
+
+    /* Floating Shapes */
+    .shape {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+        filter: blur(10px);
+        opacity: 0.3;
+        animation: floatShape 10s infinite ease-in-out;
+    }
+
+    @keyframes floatShape {
+        0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+        25% { transform: translate(50px, -30px) rotate(90deg) scale(1.2); }
+        50% { transform: translate(0, -60px) rotate(180deg) scale(1); }
+        75% { transform: translate(-50px, -30px) rotate(270deg) scale(0.8); }
+    }
+
+    /* Interactive Wave Background */
+    .wave-container {
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        z-index: -3;
+        opacity: 0.5;
+    }
+
+    .wave {
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+        filter: blur(20px);
+        animation: waveMove 20s infinite linear;
+        transform-origin: 50% 50%;
+    }
+
+    .wave:nth-child(2) {
+        animation-delay: -5s;
+        opacity: 0.3;
+    }
+
+    .wave:nth-child(3) {
+        animation-delay: -10s;
+        opacity: 0.2;
+    }
+
+    @keyframes waveMove {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="background-3d"></div>
+<div class="wave-container">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+</div>
+
+<div class="cube-wrapper" id="cubeContainer"></div>
+
+<script>
+// Create multiple cubes
+function createCubes() {
+    const container = document.getElementById('cubeContainer');
+    const numCubes = 5;
+
+    for (let i = 0; i < numCubes; i++) {
+        const cube = document.createElement('div');
+        cube.className = 'cube';
+        
+        // Random position
+        cube.style.left = `${Math.random() * 100}%`;
+        cube.style.top = `${Math.random() * 100}%`;
+        
+        // Random size
+        const size = 50 + Math.random() * 100;
+        cube.style.width = `${size}px`;
+        cube.style.height = `${size}px`;
+        
+        // Random animation duration
+        const duration = 15 + Math.random() * 10;
+        cube.style.animation = `rotateCube ${duration}s infinite linear`;
+
+        // Create cube faces
+        ['front', 'back', 'right', 'left', 'top', 'bottom'].forEach(face => {
+            const cubeFace = document.createElement('div');
+            cubeFace.className = `cube-face cube-${face}`;
+            cube.appendChild(cubeFace);
+        });
+
+        container.appendChild(cube);
+    }
+}
+
+// Create floating shapes
+function createShapes() {
+    const container = document.querySelector('.background-3d');
+    const numShapes = 10;
+
+    for (let i = 0; i < numShapes; i++) {
+        const shape = document.createElement('div');
+        shape.className = 'shape';
+        
+        // Random size and position
+        const size = 20 + Math.random() * 100;
+        shape.style.width = `${size}px`;
+        shape.style.height = `${size}px`;
+        shape.style.left = `${Math.random() * 100}%`;
+        shape.style.top = `${Math.random() * 100}%`;
+        
+        // Random animation delay
+        shape.style.animationDelay = `${Math.random() * 10}s`;
+
+        container.appendChild(shape);
+    }
+}
+
+// Initialize all background effects
+document.addEventListener('DOMContentLoaded', function() {
+    createCubes();
+    createShapes();
+    
+    // Original login box animations and effects remain unchanged
+    const loginBox = document.querySelector('.login-box');
+    const maxTilt = 5; // Increased tilt for more noticeable effect
+    let isHovered = false;
+
+    // Add data-text attribute for the gradient text effect
+    const heading = loginBox.querySelector('h2');
+    heading.setAttribute('data-text', heading.textContent);
+
+    // Enhanced 3D effect on mouse move
+    document.addEventListener('mousemove', function(e) {
+        if (!loginBox || !isHovered) return;
+
+        const rect = loginBox.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const mouseX = e.clientX - centerX;
+        const mouseY = e.clientY - centerY;
+        
+        const rotateX = (mouseY / (rect.height / 2)) * -maxTilt;
+        const rotateY = (mouseX / (rect.width / 2)) * maxTilt;
+        
+        loginBox.style.transform = `
+            perspective(1000px) 
+            rotateX(${rotateX}deg) 
+            rotateY(${rotateY}deg)
+            translateZ(10px)
+        `;
+
+        // Parallax effect for heading and form elements
+        heading.style.transform = `
+            translateZ(50px) 
+            rotateX(${rotateX * 0.5}deg) 
+            rotateY(${rotateY * 0.5}deg)
+        `;
+
+        // Subtle movement for form inputs
+        const inputs = loginBox.querySelectorAll('input');
+        inputs.forEach((input, index) => {
+            input.style.transform = `
+                translateZ(${20 + index * 5}px)
+                rotateX(${rotateX * 0.3}deg)
+                rotateY(${rotateY * 0.3}deg)
+            `;
+        });
+    });
+
+    // Enhanced hover effects
+    loginBox.addEventListener('mouseenter', function() {
+        isHovered = true;
+        loginBox.style.transition = 'transform 0.3s ease';
+        heading.style.transition = 'transform 0.3s ease';
+    });
+
+    loginBox.addEventListener('mouseleave', function() {
+        isHovered = false;
+        loginBox.style.transition = 'transform 0.5s ease';
+        heading.style.transition = 'transform 0.5s ease';
+        loginBox.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+        heading.style.transform = 'translateZ(30px)';
+        
+        // Reset form inputs
+        const inputs = loginBox.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.style.transform = 'translateZ(5px)';
+        });
+    });
+
+    // Smooth entrance animation
+    loginBox.style.opacity = '0';
+    loginBox.style.transform = 'perspective(1000px) translateY(20px)';
+    setTimeout(() => {
+        loginBox.style.transition = 'all 0.8s ease';
+        loginBox.style.opacity = '1';
+        loginBox.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+    }, 100);
+});
+
+function togglePasswordVisibility(button) {
+    const input = button.previousElementSibling;
+    const icon = button.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+
+<div class="login-container">
+    <div class="login-box">
+        <h2 data-text="Login" style="background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; text-shadow: 4px 4px 8px rgba(255,97,216,0.2); letter-spacing: 2px; font-size: 2.5em;">Login</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="{{ form.password.id_for_label }}">Password</label>
+                {{ form.password }}
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-bottom: 5px;">Login</button>
+        </form>
+        <h6 style="text-align: center; margin-top: 15px; margin-bottom: 20px; color: #8b949e;">Don't have an account? Sign up as</h6>
+        <div class="registration-links" style="margin-top: 15px;">
+            <a href="{% url 'faculty_register' %}" class="register-btn faculty-btn">
+                <span>
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Faculty
+                </span>
+            </a>
+            <a href="{% url 'student_register' %}" class="register-btn student-btn">
+                <span>
+                    <i class="fas fa-user-graduate"></i>
+                    Student
+                </span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+{% endblock %}

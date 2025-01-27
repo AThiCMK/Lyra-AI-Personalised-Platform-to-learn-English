@@ -1,0 +1,156 @@
+﻿{% extends "student/student_base.html" %}
+
+{% block title %}Reading Test{% endblock %}
+
+{% block content %}
+<h1>Reading Test - Level {{ test_profile.test_progress.level }}</h1>
+
+<div id="test-container">
+    <p id="sentence-text"><strong>{{ current_sentence.sentence }}</strong></p>
+    <input type="hidden" id="sentence-uuid" value="{{ current_sentence.id }}">
+
+    <form id="audio-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <button id="record-btn" type="button" class="btn btn-primary">Start Recording</button>
+        <button id="stop-btn" type="button" class="btn btn-danger" disabled>Stop Recording</button>
+
+        <input id="audio-file" type="file" name="audio_file" hidden>
+
+        <button id="submit-btn" type="button" class="btn btn-success" disabled>Submit</button>
+    </form>
+</div>
+
+<div id="error-message" class="alert alert-danger mt-3" style="display: none;"></div>
+<div id="success-message" class="alert alert-success mt-3" style="display: none;"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        let mediaRecorder;
+        const recordButton = document.getElementById("record-btn");
+        const stopButton = document.getElementById("stop-btn");
+        const submitButton = document.getElementById("submit-btn");
+        const audioFile = document.getElementById("audio-file");
+        const sentenceUuidInput = document.getElementById("sentence-uuid");
+        const errorMessage = document.getElementById("error-message");
+        const successMessage = document.getElementById("success-message");
+        const beginnerDashboardURL = "{{ request.build_absolute_uri|slice:':-1' }}{% url 'beginner_dashboard' %}";
+        document.getElementById("submit-btn").setAttribute("data-dashboard-url", beginnerDashboardURL);
+
+        const clearMessages = () => {
+            errorMessage.style.display = "none";
+            successMessage.style.display = "none";
+        };
+
+        const showError = (message) => {
+            clearMessages();
+            errorMessage.textContent = message;
+            errorMessage.style.display = "block";
+        };
+
+        const showSuccess = (message) => {
+            clearMessages();
+            successMessage.textContent = message;
+            successMessage.style.display = "block";
+        };
+
+        function getCSRFToken() {
+            let cookieValue = null;
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith('csrftoken=')) {
+                    cookieValue = cookie.substring('csrftoken='.length, cookie.length);
+                    break;
+                }
+            }
+            return cookieValue;
+        }
+
+        // Start recording
+        recordButton.addEventListener("click", async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                const audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+                    const recordedFile = new File([audioBlob], "recording.wav", { type: "audio/wav" });
+
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(recordedFile);
+                    audioFile.files = dataTransfer.files;
+
+                    console.log("DEBUG: Recorded audio file assigned:", audioFile.files[0]);
+
+                    stopButton.disabled = true;
+                    submitButton.disabled = false;
+                };
+
+                mediaRecorder.start();
+                recordButton.disabled = true;
+                stopButton.disabled = false;
+                clearMessages();
+            } catch (err) {
+                showError("Failed to access microphone: " + err.message);
+            }
+        });
+
+        // Stop recording
+        stopButton.addEventListener("click", () => {
+            mediaRecorder.stop();
+        });
+
+        submitButton.addEventListener("click", async () => {
+            if (!audioFile.files.length) {
+                alert("No audio file selected.");
+                return;
+            }
+          
+            const formData = new FormData();
+            const sentenceUUID = sentenceUuidInput.value;
+            formData.append("sentence_uuid", sentenceUUID);
+            formData.append(`audio_${sentenceUUID}`, audioFile.files[0]);
+
+            console.log("DEBUG: Form Data Created", formData);
+
+            try {
+                const response = await fetch("{% url 'reading_test_view' test_profile.test_progress.category test_profile.test_progress.level %}", {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": getCSRFToken()
+                    },
+                    body: formData,
+                });
+
+                console.log("DEBUG: Server Response Status:", response.status);
+
+                if (!response.ok) {
+                    throw new Error("Failed to submit audio. Server responded with " + response.status);
+                }
+
+                const result = await response.json();
+                if (result.status === "completed") {
+                    showSuccess("Test completed successfully.");
+                    const beginnerDashboardURL = submitButton.getAttribute("data-dashboard-url");
+                    setTimeout(() => {
+                        window.location.href = '/student/dashboard/beginner/';
+                    }, 2000);
+                } else if (result.status === "next") {
+                    sentenceUuidInput.value = result.sentence_uuid;
+                    document.getElementById("sentence-text").textContent = result.sentence_text;
+                    submitButton.disabled = true;
+                    recordButton.disabled = false;
+                } else {
+                    showError(result.message || "Unexpected error occurred.");
+                }
+            } catch (err) {
+                console.error("DEBUG: Fetch Error:", err);
+                showError(err.message);
+            }
+        });
+    });
+</script>
+{% endblock %}

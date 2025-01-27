@@ -1,0 +1,870 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Student Registration{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+        --primary-color: #58a6ff;
+        --primary-dark: #1f6feb;
+        --accent-color: #7ee787;
+        --bg-dark: #0d1117;
+        --bg-darker: #161b22;
+        --text-primary: #c9d1d9;
+        --text-secondary: #8b949e;
+        --border-color: #30363d;
+        --card-bg: rgba(22, 27, 34, 0.8);
+        --success-color: #238636;
+    }
+
+    body {
+        background-color: var(--bg-dark);
+        color: var(--text-primary);
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        height: 100vh;
+        perspective: 1500px;
+        background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
+        overflow: hidden;
+    }
+
+    .register-container {
+        position: relative;
+        width: 100%;
+        max-width: 650px;
+        margin: 1rem auto;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        box-sizing: border-box;
+        z-index: 1;
+        transform: scale(0.95);
+        transform-origin: center top;
+    }
+
+    .register-box {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        padding: 2.5rem;
+        border-radius: 20px;
+        width: 100%;
+        max-width: 550px;
+        position: relative;
+        border: 1px solid var(--border-color);
+        transform-style: preserve-3d;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .register-box h2 {
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 2.4rem;
+        font-weight: 700;
+        transform: translateZ(20px);
+        letter-spacing: -1px;
+    }
+
+    .form-group {
+        margin-bottom: 1.4rem;
+        transform-style: preserve-3d;
+        will-change: transform;
+    }
+
+    .register-box form label {
+        display: block;
+        margin-bottom: 0.4rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transform: translateZ(10px);
+        letter-spacing: -0.3px;
+    }
+
+    .register-box form input {
+        width: 100%;
+        padding: 0.9rem 1.2rem;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background: rgba(22, 27, 34, 0.6);
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        transform: translateZ(5px);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .register-box form input:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        transform: translateZ(15px);
+        box-shadow: 0 0 0 2px rgba(126, 231, 135, 0.1);
+    }
+
+    .password-field {
+        position: relative;
+        margin-bottom: 1.4rem;
+        will-change: transform;
+    }
+
+    .password-field input {
+        padding-right: 2.8rem;
+    }
+
+    .register-button {
+        width: 100%;
+        padding: 1rem;
+        background-color: var(--success-color);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        transform: translateZ(10px);
+        letter-spacing: -0.3px;
+        margin-top: 2rem;
+        position: relative;
+        overflow: hidden;
+        will-change: transform;
+    }
+
+    .register-button:hover {
+        background-color: #2ea043;
+        transform: translateY(-2px) translateZ(10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .register-button:disabled {
+        background-color: var(--text-secondary);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .submit-container {
+        width: 100%;
+        margin-top: 1rem;
+        transform-style: preserve-3d;
+    }
+
+    .login-link {
+        display: block;
+        text-align: center;
+        margin-top: 1.2rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        transform: translateZ(10px);
+    }
+
+    .login-link:hover {
+        color: var(--accent-color);
+        transform: translateZ(15px);
+    }
+
+    /* Animated background */
+    .background-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+        background: linear-gradient(45deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+    }
+
+    .background-animation::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 50% 50%, rgba(126, 231, 135, 0.03) 0%, transparent 50%);
+        animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 0.5;
+        }
+
+        50% {
+            opacity: 0.8;
+        }
+    }
+
+    @media (max-width: 600px) {
+
+        .register-box {
+            padding: 2rem 1.5rem;
+            margin: 1rem;
+        }
+
+        .register-box h2 {
+            font-size: 1.8rem;
+        }
+    }
+
+    /* Enhanced 3D decorative elements */
+    .decoration {
+        position: absolute;
+        border-radius: 50%;
+        background: var(--accent-color);
+        opacity: 0.1;
+        filter: blur(40px);
+        z-index: -1;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .decoration-1 {
+        width: 300px;
+        height: 300px;
+        top: -150px;
+        right: -150px;
+        animation-delay: 0s;
+    }
+
+    .decoration-2 {
+        width: 200px;
+        height: 200px;
+        bottom: -100px;
+        left: -100px;
+        background: var(--primary-color);
+        animation-delay: -2s;
+    }
+
+    .decoration-3 {
+        width: 150px;
+        height: 150px;
+        top: 50%;
+        right: -75px;
+        background: var(--success-color);
+        animation-delay: -4s;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0) scale(1);
+        }
+
+        50% {
+            transform: translateY(-20px) scale(1.05);
+        }
+    }
+
+    /* Particle effect */
+    .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
+
+    .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: var(--accent-color);
+        border-radius: 50%;
+        opacity: 0.3;
+        animation: moveParticle 8s linear infinite;
+    }
+
+    @keyframes moveParticle {
+        0% {
+            transform: translateY(100vh) translateX(0) scale(0);
+            opacity: 0;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+
+        100% {
+            transform: translateY(-100px) translateX(100px) scale(1);
+            opacity: 0;
+        }
+    }
+
+    /* Enhanced card effects */
+    .register-box {
+        transform-style: preserve-3d;
+        transform: perspective(1000px);
+    }
+
+    .register-box::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        filter: blur(15px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+        border-radius: 16px;
+    }
+
+    .register-box:hover::after {
+        opacity: 0.2;
+    }
+
+    .register-box h2 {
+        position: relative;
+        transform-style: preserve-3d;
+    }
+
+    .register-box h2::before {
+        content: attr(data-text);
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        opacity: 0;
+        transform: translateZ(-1px);
+        transition: opacity 0.3s ease;
+    }
+
+    .register-box:hover h2::before {
+        opacity: 1;
+    }
+
+    /* Enhanced form inputs */
+    .register-box form input {
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .register-box form input:focus {
+        transform: translateZ(20px);
+        box-shadow: 0 0 0 2px rgba(126, 231, 135, 0.1), 0 15px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Button effects */
+    .register-button {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .register-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: translateX(-100%);
+    }
+
+    .register-button:hover::before {
+        transform: translateX(100%);
+        transition: transform 0.6s ease;
+    }
+
+    /* Login link effects */
+    .login-link {
+        position: relative;
+        transform-style: preserve-3d;
+    }
+
+    .login-link::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -2px;
+        width: 100%;
+        height: 1px;
+        background: var(--accent-color);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+        transform-origin: right;
+    }
+
+    .login-link:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+
+    /* Enhanced 3D Background */
+    .background-3d {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: -2;
+        overflow: hidden;
+        background: linear-gradient(45deg, var(--bg-color) 0%, var(--primary-color) 100%);
+    }
+
+    .cube-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        perspective: 1000px;
+        z-index: -1;
+    }
+
+    .cube {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        transform-style: preserve-3d;
+        animation: rotateCube 20s infinite linear;
+    }
+
+    .cube-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+    }
+
+    .cube-front {
+        transform: translateZ(50px);
+    }
+
+    .cube-back {
+        transform: translateZ(-50px) rotateY(180deg);
+    }
+
+    .cube-right {
+        transform: rotateY(90deg) translateZ(50px);
+    }
+
+    .cube-left {
+        transform: rotateY(-90deg) translateZ(50px);
+    }
+
+    .cube-top {
+        transform: rotateX(90deg) translateZ(50px);
+    }
+
+    .cube-bottom {
+        transform: rotateX(-90deg) translateZ(50px);
+    }
+
+    @keyframes rotateCube {
+        0% {
+            transform: rotateX(0) rotateY(0) rotateZ(0);
+        }
+
+        100% {
+            transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg);
+        }
+    }
+
+    /* Floating Shapes */
+    .shape {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+        filter: blur(10px);
+        opacity: 0.3;
+        animation: floatShape 10s infinite ease-in-out;
+    }
+
+    @keyframes floatShape {
+        0%, 100% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+        }
+
+        25% {
+            transform: translate(50px, -30px) rotate(90deg) scale(1.2);
+        }
+
+        50% {
+            transform: translate(0, -60px) rotate(180deg) scale(1);
+        }
+
+        75% {
+            transform: translate(-50px, -30px) rotate(270deg) scale(0.8);
+        }
+    }
+
+    /* Interactive Wave Background */
+    .wave-container {
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        z-index: -3;
+        opacity: 0.5;
+    }
+
+    .wave {
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+        filter: blur(20px);
+        animation: waveMove 20s infinite linear;
+        transform-origin: 50% 50%;
+    }
+
+    .wave:nth-child(2) {
+        animation-delay: -5s;
+        opacity: 0.3;
+    }
+
+    .wave:nth-child(3) {
+        animation-delay: -10s;
+        opacity: 0.2;
+    }
+
+    @keyframes waveMove {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Enhanced Particle System */
+    .particle {
+        position: absolute;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+        transform-style: preserve-3d;
+    }
+
+    @keyframes particleFloat {
+        0%, 100% {
+            transform: translateY(0) translateX(0) translateZ(0) rotate(0deg);
+        }
+
+        25% {
+            transform: translateY(-100px) translateX(50px) translateZ(50px) rotate(90deg);
+        }
+
+        50% {
+            transform: translateY(-200px) translateX(0) translateZ(100px) rotate(180deg);
+        }
+
+        75% {
+            transform: translateY(-100px) translateX(-50px) translateZ(50px) rotate(270deg);
+        }
+    }
+
+    /* Password match message */
+    .password-match-message {
+        font-size: 0.85rem;
+        margin-top: 0.4rem;
+        transition: all 0.3s ease;
+        position: absolute;
+        left: 0;
+        bottom: -1.4rem;
+    }
+
+    .password-match-message.match {
+        color: var(--success-color);
+    }
+
+    .password-match-message.no-match {
+        color: #f85149;
+    }
+
+    .register-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        background-color: var(--text-secondary);
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 0.8rem;
+        top: 60%;
+        transform: translateY(-40%);
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .register-button.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: var(--text-secondary);
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .register-button.disabled:hover {
+        background-color: var(--text-secondary);
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .shake {
+        animation: shake 0.4s ease-in-out;
+    }
+</style>
+
+<div class="background-3d"></div>
+<div class="wave-container">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+</div>
+
+<div class="cube-wrapper" id="cubeContainer"></div>
+
+<div class="register-container">
+    <div class="register-box">
+        <h2 data-text="Student Registration"style="background: linear-gradient( #FF6B6B, #4ECDC4, #45B7D1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">Student Registration</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="submit-container">
+                <button type="submit" class="register-button">Register</button>
+            </div>
+        </form>
+        <a href="{% url 'login' %}" class="login-link">Already registered? Login here.</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const registerBox = document.querySelector('.register-box');
+        const maxTilt = 5; // Increased tilt for more noticeable effect
+        let isHovered = false;
+
+        // Add data-text attribute for the gradient text effect
+        const heading = registerBox.querySelector('h2');
+        heading.setAttribute('data-text', heading.textContent);
+
+        // Enhanced 3D effect on mouse move
+        document.addEventListener('mousemove', function (e) {
+            if (!registerBox || !isHovered) return;
+
+            const rect = registerBox.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const mouseX = e.clientX - centerX;
+            const mouseY = e.clientY - centerY;
+
+            const rotateX = (mouseY / (rect.height / 2)) * -maxTilt;
+            const rotateY = (mouseX / (rect.width / 2)) * maxTilt;
+
+            registerBox.style.transform = `
+            perspective(1000px)
+            rotateX(${rotateX}deg)
+            rotateY(${rotateY}deg)
+            translateZ(10px)
+        `;
+
+            // Parallax effect for heading and form elements
+            heading.style.transform = `
+            translateZ(50px)
+            rotateX(${rotateX * 0.5}deg)
+            rotateY(${rotateY * 0.5}deg)
+        `;
+
+            // Subtle movement for form inputs
+            const inputs = registerBox.querySelectorAll('input');
+            inputs.forEach((input, index) => {
+                input.style.transform = `
+                translateZ(${20 + index * 5}px)
+                rotateX(${rotateX * 0.3}deg)
+                rotateY(${rotateY * 0.3}deg)
+            `;
+            });
+        });
+
+        // Enhanced hover effects
+        registerBox.addEventListener('mouseenter', function () {
+            isHovered = true;
+            registerBox.style.transition = 'transform 0.3s ease';
+            heading.style.transition = 'transform 0.3s ease';
+        });
+
+        registerBox.addEventListener('mouseleave', function () {
+            isHovered = false;
+            registerBox.style.transition = 'transform 0.5s ease';
+            heading.style.transition = 'transform 0.5s ease';
+            registerBox.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+            heading.style.transform = 'translateZ(30px)';
+
+            // Reset form inputs
+            const inputs = registerBox.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.style.transform = 'translateZ(5px)';
+            });
+        });
+
+        // Smooth entrance animation
+        registerBox.style.opacity = '0';
+        registerBox.style.transform = 'perspective(1000px) translateY(20px)';
+        setTimeout(() => {
+            registerBox.style.transition = 'all 0.8s ease';
+            registerBox.style.opacity = '1';
+            registerBox.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+        }, 100);
+
+        // Create multiple cubes
+        function createCubes() {
+            const container = document.getElementById('cubeContainer');
+            const numCubes = 5;
+
+            for (let i = 0; i < numCubes; i++) {
+                const cube = document.createElement('div');
+                cube.className = 'cube';
+
+                // Random position
+                cube.style.left = `${Math.random() * 100}%`;
+                cube.style.top = `${Math.random() * 100}%`;
+
+                // Random size
+                const size = 50 + Math.random() * 100;
+                cube.style.width = `${size}px`;
+                cube.style.height = `${size}px`;
+
+                // Random animation duration
+                const duration = 15 + Math.random() * 10;
+                cube.style.animation = `rotateCube ${duration}s infinite linear`;
+
+                // Create cube faces
+                ['front', 'back', 'right', 'left', 'top', 'bottom'].forEach(face => {
+                    const cubeFace = document.createElement('div');
+                    cubeFace.className = `cube-face cube-${face}`;
+                    cube.appendChild(cubeFace);
+                });
+
+                container.appendChild(cube);
+            }
+        }
+
+        // Create floating shapes
+        function createShapes() {
+            const container = document.querySelector('.background-3d');
+            const numShapes = 10;
+
+            for (let i = 0; i < numShapes; i++) {
+                const shape = document.createElement('div');
+                shape.className = 'shape';
+
+                // Random size and position
+                const size = 20 + Math.random() * 100;
+                shape.style.width = `${size}px`;
+                shape.style.height = `${size}px`;
+                shape.style.left = `${Math.random() * 100}%`;
+                shape.style.top = `${Math.random() * 100}%`;
+
+                // Random animation delay
+                shape.style.animationDelay = `${Math.random() * 10}s`;
+
+                container.appendChild(shape);
+            }
+        }
+
+        // Enhanced particle system
+        function createEnhancedParticles() {
+            const container = document.querySelector('.background-3d');
+            const numParticles = 30;
+
+            for (let i = 0; i < numParticles; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                // Random size
+                const size = 2 + Math.random() * 8;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+
+                // Random position
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+
+                // Custom animation
+                const duration = 10 + Math.random() * 20;
+                particle.style.animation = `particleFloat ${duration}s infinite ease-in-out`;
+                particle.style.animationDelay = `${Math.random() * -20}s`;
+
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize all background effects
+        createCubes();
+        createShapes();
+        createEnhancedParticles();
+
+        const form = document.querySelector('form');
+        const allInputs = form.querySelectorAll('input[required]');
+        const registerButton = document.querySelector('.register-button');
+
+        // Initial check
+        checkFormValidity();
+
+        // Add input event listener to all required fields
+        allInputs.forEach(input => {
+            input.addEventListener('input', checkFormValidity);
+        });
+
+        function checkFormValidity() {
+            let isValid = true;
+            
+            // Check if all required fields are filled
+            allInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                }
+            });
+
+            // Enable/disable register button
+            registerButton.disabled = !isValid;
+            if (isValid) {
+                registerButton.classList.remove('disabled');
+            } else {
+                registerButton.classList.add('disabled');
+            }
+        }
+
+        // Add form submit validation
+        form.addEventListener('submit', function(e) {
+            if (!registerButton.disabled) {
+                return true;
+            }
+            e.preventDefault();
+            return false;
+        });
+    });
+</script>
+{% endblock %}

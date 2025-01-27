@@ -1,0 +1,1051 @@
+﻿{% extends 'faculty/faculty_base.html' %}
+
+{% block faculty_content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+    :root {
+        --bg-color: #f5f5f5;
+        --primary: #1a1a1a;
+        --secondary: #4a4a4a;
+        --text-primary: #000000;
+    }
+
+    body {
+        margin: 0;
+        padding: 0 !important;
+        min-height: 100vh;
+        font-family: 'Poppins', sans-serif;
+        position: relative;
+        overflow-x: hidden;
+        background: linear-gradient(145deg, #f5f5f5 0%, #e8e8e8 100%);
+    }
+
+    #particles-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+
+    .upload-container {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        width: 100%;
+        padding: 2rem;
+    }
+
+    .container-corners::before,
+    .container-corners::after {
+        content: '';
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border: 2px solid transparent;
+        animation: cornerRotate 8s linear infinite;
+        opacity: 0.7;
+    }
+
+    .container-corners::before {
+        top: 2rem;
+        left: 2rem;
+        border-top: 2px solid var(--secondary);
+        border-left: 2px solid var(--secondary);
+        transform-origin: top left;
+    }
+
+    .container-corners::after {
+        bottom: 2rem;
+        right: 2rem;
+        border-bottom: 2px solid var(--secondary);
+        border-right: 2px solid var(--secondary);
+        transform-origin: bottom right;
+    }
+
+    .border-beam {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+    }
+
+    .border-beam::before,
+    .border-beam::after,
+    .border-beam-vertical::before,
+    .border-beam-vertical::after {
+        content: '';
+        position: absolute;
+        width: 30%;
+        height: 2px;
+        background: linear-gradient(90deg, 
+            transparent,
+            var(--primary),
+            var(--secondary),
+            transparent
+        );
+        filter: blur(2px);
+        opacity: 0.6;
+    }
+
+    .border-beam::before {
+        top: 0;
+        right: 0;
+        animation: moveBeamX 6s linear infinite;
+    }
+
+    .border-beam::after {
+        bottom: 0;
+        left: 0;
+        animation: moveBeamX 6s linear infinite reverse;
+    }
+
+    .border-beam-vertical::before {
+        top: 0;
+        right: 0;
+        animation: moveBeamY 6s linear infinite;
+    }
+
+    .border-beam-vertical::after {
+        bottom: 0;
+        left: 0;
+        animation: moveBeamY 6s linear infinite reverse;
+    }
+
+    .upload-card {
+        position: relative;
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 4rem;
+        width: 100%;
+        max-width: 800px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .file-upload-container {
+        border: 2px dashed var(--secondary);
+        border-radius: 8px;
+        padding: 5rem;
+        text-align: center;
+        margin-bottom: 3rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #ffffff;
+        position: relative;
+    }
+
+    .file-upload-container:hover {
+        border-color: #1a1a1a;
+        background: #ffffff;
+        box-shadow: 
+            0 12px 32px rgba(0, 0, 0, 0.1),
+            0 0 0 1px rgba(0, 0, 0, 0.1);
+    }
+
+    .file-upload-container::before {
+        content: '';
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        bottom: -50px;
+        left: -50px;
+        z-index: -1;
+    }
+
+    .file-upload-container:hover::before {
+        background: transparent;
+    }
+
+    .upload-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .upload-title {
+        color: var(--text-primary);
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+    }
+
+    .upload-text {
+        color: var(--text-primary);
+    }
+
+    .upload-icon {
+        font-size: 4rem;
+        color: var(--secondary);
+        margin-bottom: 2rem;
+        display: inline-block;
+        animation: slowSpinIcon 12s linear infinite;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-container:hover .upload-icon {
+        animation: activeSpinIcon 2s linear infinite;
+        color: #1a1a1a;
+    }
+
+    @keyframes slowSpinIcon {
+        0% {
+            transform: rotateY(0deg);
+        }
+        100% {
+            transform: rotateY(360deg);
+        }
+    }
+
+    @keyframes activeSpinIcon {
+        0% {
+            transform: rotateY(360deg);
+        }
+        100% {
+            transform: rotateY(0deg);
+        }
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .file-name {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        color: var(--text-primary);
+    }
+
+    #clearFile {
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+        display: none;
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+    }
+
+    #clearFile:hover {
+        opacity: 1;
+    }
+
+    .upload-button {
+        width: 100%;
+        padding: 0.8rem;
+        background: var(--secondary);
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .upload-button:hover {
+        background: #1a1a1a;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes moveBeamX {
+        0% {
+            left: -30%;
+            opacity: 0;
+        }
+        20% {
+            opacity: 0.6;
+        }
+        80% {
+            opacity: 0.6;
+        }
+        100% {
+            left: 100%;
+            opacity: 0;
+        }
+    }
+
+    @keyframes moveBeamY {
+        0% {
+            top: -30%;
+            opacity: 0;
+        }
+        20% {
+            opacity: 0.6;
+        }
+        80% {
+            opacity: 0.6;
+        }
+        100% {
+            top: 100%;
+            opacity: 0;
+        }
+    }
+
+    @keyframes cornerRotate {
+        0% {
+            transform: rotate(0deg) scale(1);
+            opacity: 0.4;
+        }
+        25% {
+            transform: rotate(90deg) scale(1.1);
+            opacity: 0.7;
+        }
+        50% {
+            transform: rotate(180deg) scale(1);
+            opacity: 0.4;
+        }
+        75% {
+            transform: rotate(270deg) scale(1.1);
+            opacity: 0.7;
+        }
+        100% {
+            transform: rotate(360deg) scale(1);
+            opacity: 0.4;
+        }
+    }
+
+    .particle-icon {
+        opacity: 0.8;
+        color: var(--secondary);
+        font-size: 24px;
+        pointer-events: none;
+        text-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .background-icons {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: -1;
+        overflow: hidden;
+    }
+
+    .bg-icon {
+        position: absolute;
+        font-size: 2rem;
+        color: rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease-out;
+    }
+
+    .bg-icon.collision {
+        animation: collide 0.5s ease-out;
+    }
+
+    @keyframes collide {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.2) rotate(10deg);
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+        }
+    }
+
+    @keyframes floatIcon {
+        0%, 100% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+        25% {
+            transform: translate(10px, -10px) rotate(5deg);
+        }
+        50% {
+            transform: translate(0, 15px) rotate(-5deg);
+        }
+        75% {
+            transform: translate(-10px, -5px) rotate(3deg);
+        }
+    }
+
+    /* Stagger animation delays */
+    {% for i in "123456789"|make_list %}
+    .bg-icon:nth-child({{ i }}) {
+        animation-delay: -{{ forloop.counter }}s;
+    }
+    {% endfor %}
+
+    .upload-form {
+        position: relative;
+        z-index: 10;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    nav {
+        position: relative;
+        z-index: 20;
+    }
+</style>
+
+<div id="particles-canvas"></div>
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="upload-container">
+                <div class="container-corners"></div>
+                <div class="upload-card">
+                    <div class="border-beam"></div>
+                    <div class="border-beam-vertical"></div>
+                    <div class="upload-content">
+                        <h1 class="upload-title">Upload Learning Content</h1>
+                        <form method="post" enctype="multipart/form-data" class="upload-form">
+                            {% csrf_token %}
+                            <div class="file-upload-container" id="dropZone">
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <p class="upload-text">Drag and drop your file here or click to browse</p>
+                                <input type="file" name="file" id="file" class="file-input" required>
+                                <div class="file-name">
+                                    <span id="selectedFileName"></span>
+                                    <button type="button" id="clearFile" aria-label="Clear file selection">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="submit" class="upload-button">Upload Content</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="background-icons">
+    <i class="fas fa-book bg-icon"></i>
+    <i class="fas fa-graduation-cap bg-icon"></i>
+    <i class="fas fa-pencil-alt bg-icon"></i>
+    <i class="fas fa-calculator bg-icon"></i>
+    <i class="fas fa-atom bg-icon"></i>
+    <i class="fas fa-microscope bg-icon"></i>
+    <i class="fas fa-flask bg-icon"></i>
+    <i class="fas fa-dna bg-icon"></i>
+    <i class="fas fa-brain bg-icon"></i>
+    <i class="fas fa-laptop-code bg-icon"></i>
+    <i class="fas fa-chart-line bg-icon"></i>
+    <i class="fas fa-square-root-alt bg-icon"></i>
+    <i class="fas fa-infinity bg-icon"></i>
+    <i class="fas fa-globe-americas bg-icon"></i>
+    <i class="fas fa-palette bg-icon"></i>
+    <i class="fas fa-music bg-icon"></i>
+    <i class="fas fa-chess bg-icon"></i>
+    <i class="fas fa-microscope bg-icon"></i>
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('file');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const clearFileButton = document.getElementById('clearFile');
+
+    dropZone.addEventListener('click', (e) => {
+        if (!e.target.closest('#clearFile')) {
+            fileInput.click();
+        }
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length) {
+            fileInput.files = files;
+            updateFileName(files[0].name);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            updateFileName(e.target.files[0].name);
+        }
+    });
+
+    clearFileButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fileInput.value = '';
+        updateFileName('');
+    });
+
+    function updateFileName(name) {
+        if (name) {
+            selectedFileName.textContent = name;
+            clearFileButton.style.display = 'inline-block';
+        } else {
+            selectedFileName.textContent = '';
+            clearFileButton.style.display = 'none';
+        }
+    }
+</script>
+
+<script>
+class Particles {
+    constructor(options) {
+        this.options = {
+            selector: '#particles-canvas',
+            quantity: 12, // Reduced quantity for better performance
+            staticity: 30,
+            ease: 30,
+            size: 70,
+            color: '#2a2a2a',
+            ...options
+        };
+        
+        this.icons = [
+            'fa-file-audio', 'fa-music', 'fa-microphone',
+            'fa-comment', 'fa-envelope', 'fa-paper-plane',
+            'fa-graduation-cap', 'fa-brain', 'fa-book-reader',
+            'fa-lightbulb', 'fa-chalkboard-teacher', 'fa-book-open',
+            'fa-file-pdf', 'fa-file-word', 'fa-file-powerpoint',
+            'fa-laptop', 'fa-desktop', 'fa-tablet'
+        ];
+        
+        this.repulsionZones = [];
+        
+        this.init();
+    }
+
+    init() {
+        this.canvas = document.createElement('canvas');
+        this.context = this.canvas.getContext('2d');
+        this.container = document.querySelector(this.options.selector);
+        this.particles = [];
+        this.mouse = { x: 0, y: 0 };
+        this.isAnimating = false;
+
+        this.setupCanvas();
+        this.setupRepulsionZones();
+        this.createParticles();
+        this.bindEvents();
+        this.animate();
+    }
+
+    setupCanvas() {
+        this.canvas.style.position = 'fixed';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+        this.canvas.style.pointerEvents = 'none';
+        this.canvas.style.zIndex = '-1'; // Set canvas behind everything
+        this.container.appendChild(this.canvas);
+        this.resizeCanvas();
+    }
+
+    setupRepulsionZones() {
+        // Get navbar element
+        const navbar = document.querySelector('nav');
+        if (navbar) {
+            const navRect = navbar.getBoundingClientRect();
+            this.repulsionZones.push({
+                x: navRect.left,
+                y: navRect.top,
+                width: navRect.width,
+                height: navRect.height + 8, // Minimal padding
+                strength: 0.8 // Reduced strength
+            });
+        }
+
+        // Get upload form
+        const uploadForm = document.querySelector('.upload-form');
+        if (uploadForm) {
+            const formRect = uploadForm.getBoundingClientRect();
+            this.repulsionZones.push({
+                x: formRect.left - 40, // Reduced padding
+                y: formRect.top - 60,  // Increased top padding only
+                width: formRect.width + 80, // Reduced total padding
+                height: formRect.height + 80, // Reduced total padding
+                strength: 1.0, // Reduced strength
+                topStrength: 1.2  // Additional strength for top
+            });
+        }
+    }
+
+    resizeCanvas() {
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+    }
+
+    createParticles() {
+        // Calculate grid dimensions for even distribution
+        const cols = Math.ceil(Math.sqrt(this.options.quantity));
+        const rows = Math.ceil(this.options.quantity / cols);
+        const cellWidth = this.width / cols;
+        const cellHeight = this.height / rows;
+
+        for (let i = 0; i < this.options.quantity; i++) {
+            const row = Math.floor(i / cols);
+            const col = i % cols;
+            
+            // Add controlled randomness within the cell
+            const randomX = (Math.random() * 0.6 + 0.2) * cellWidth;
+            const randomY = (Math.random() * 0.6 + 0.2) * cellHeight;
+            
+            const x = col * cellWidth + randomX;
+            const y = row * cellHeight + randomY;
+
+            // Slower initial velocities
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 0.2 + Math.random() * 0.3;
+
+            const randomIcon = this.icons[Math.floor(Math.random() * this.icons.length)];
+            this.particles.push({
+                x: x,
+                y: y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: this.options.size + (Math.random() * 20 - 10),
+                icon: randomIcon,
+                rotation: Math.random() * 360,
+                rotationSpeed: (Math.random() - 0.5) * 0.2,
+                pulsePhase: Math.random() * Math.PI * 2,
+                pulseSpeed: 0.005 + Math.random() * 0.005,
+                opacity: 0.2 + Math.random() * 0.15,
+                mass: 1 + Math.random() * 0.5,
+                repulsionRadius: 100,
+                repulsionStrength: 0.05
+            });
+        }
+    }
+
+    bindEvents() {
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
+            this.setupRepulsionZones(); // Update repulsion zones on resize
+        });
+        document.addEventListener('mousemove', (e) => {
+            this.mouse.x = e.clientX;
+            this.mouse.y = e.clientY;
+        });
+    }
+
+    handleCollision(p1, p2) {
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const minDistance = (p1.size + p2.size) / 2;
+        const repulsionDistance = p1.repulsionRadius + p2.repulsionRadius;
+
+        // Apply repulsion force when particles are close
+        if (distance < repulsionDistance) {
+            const repulsionForce = (1 - distance / repulsionDistance) * 
+                Math.min(p1.repulsionStrength, p2.repulsionStrength);
+            const angle = Math.atan2(dy, dx);
+            
+            // Apply stronger repulsion when very close
+            const closenessFactor = Math.max(0, 1 - distance / (minDistance * 2));
+            const totalForce = repulsionForce * (1 + closenessFactor * 2);
+
+            const forceX = Math.cos(angle) * totalForce;
+            const forceY = Math.sin(angle) * totalForce;
+
+            // Apply forces inversely proportional to mass
+            p1.vx -= forceX / p1.mass;
+            p1.vy -= forceY / p1.mass;
+            p2.vx += forceX / p2.mass;
+            p2.vy += forceY / p2.mass;
+        }
+
+        // Physical collision response
+        if (distance < minDistance) {
+            // Calculate collision response
+            const angle = Math.atan2(dy, dx);
+            const targetX = p1.x + Math.cos(angle) * minDistance;
+            const targetY = p1.y + Math.sin(angle) * minDistance;
+            
+            // Gentle separation
+            const moveX = (targetX - p2.x) * 0.05;
+            const moveY = (targetY - p2.y) * 0.05;
+            
+            // Apply forces based on mass
+            const totalMass = p1.mass + p2.mass;
+            const p1Ratio = p1.mass / totalMass;
+            const p2Ratio = p2.mass / totalMass;
+            
+            p1.x -= moveX * p2Ratio;
+            p1.y -= moveY * p2Ratio;
+            p2.x += moveX * p1Ratio;
+            p2.y += moveY * p1Ratio;
+            
+            // Gentle velocity exchange with high damping
+            const dampening = 0.6;
+            const nx = dx / distance;
+            const ny = dy / distance;
+            const p1Speed = p1.vx * nx + p1.vy * ny;
+            const p2Speed = p2.vx * nx + p2.vy * ny;
+            
+            const p1NewSpeed = (p1Speed * (p1.mass - p2.mass) + 2 * p2.mass * p2Speed) / totalMass;
+            const p2NewSpeed = (p2Speed * (p2.mass - p1.mass) + 2 * p1.mass * p1Speed) / totalMass;
+            
+            p1.vx = (p1.vx + (p1NewSpeed - p1Speed) * nx) * dampening;
+            p1.vy = (p1.vy + (p1NewSpeed - p1Speed) * ny) * dampening;
+            p2.vx = (p2.vx + (p2NewSpeed - p2Speed) * nx) * dampening;
+            p2.vy = (p2.vy + (p2NewSpeed - p2Speed) * ny) * dampening;
+        }
+    }
+
+    handleRepulsion(particle) {
+        this.repulsionZones.forEach(zone => {
+            const dx = Math.max(zone.x - particle.x, 0, particle.x - (zone.x + zone.width));
+            const dy = Math.max(zone.y - particle.y, 0, particle.y - (zone.y + zone.height));
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            const isNavbar = zone.height < 100;
+            const repulsionRadius = isNavbar ? 50 : 80;
+
+            if (distance < repulsionRadius) {
+                // Check if particle is above the form
+                const isAboveForm = !isNavbar && particle.y < zone.y;
+                const currentStrength = isAboveForm ? zone.topStrength || zone.strength : zone.strength;
+                
+                const repulsionStrength = (1 - distance / repulsionRadius) * currentStrength * 
+                    (isNavbar ? 0.8 : 1.0);
+
+                let repulsionX = 0;
+                let repulsionY = 0;
+
+                if (particle.x < zone.x) repulsionX = -1;
+                else if (particle.x > zone.x + zone.width) repulsionX = 1;
+                
+                if (particle.y < zone.y) {
+                    repulsionY = -1;
+                    // Stronger upward push for particles above the form
+                    if (!isNavbar) repulsionY *= 1.3;
+                }
+                else if (particle.y > zone.y + zone.height) repulsionY = 1;
+
+                if (particle.x >= zone.x && particle.x <= zone.x + zone.width) {
+                    const baseForce = isNavbar ? 1.0 : 1.2;
+                    repulsionY = particle.y < zone.y + zone.height/2 ? 
+                        -baseForce * (isAboveForm ? 1.3 : 1) : baseForce;
+                }
+                if (particle.y >= zone.y && particle.y <= zone.y + zone.height) {
+                    repulsionX = particle.x < zone.x + zone.width/2 ? 
+                        (isNavbar ? -1.0 : -1.2) : (isNavbar ? 1.0 : 1.2);
+                }
+
+                particle.vx += repulsionX * repulsionStrength;
+                particle.vy += repulsionY * repulsionStrength;
+
+                // Stronger adjustment for top of form
+                if (distance < (isNavbar ? 20 : 30)) {
+                    const pushForce = isNavbar ? 1.5 : (isAboveForm ? 2.5 : 2);
+                    particle.x += repulsionX * pushForce;
+                    particle.y += repulsionY * pushForce;
+                }
+            }
+        });
+    }
+
+    animate() {
+        this.context.clearRect(0, 0, this.width, this.height);
+
+        // Handle collisions and repulsion between particles
+        for (let i = 0; i < this.particles.length; i++) {
+            for (let j = i + 1; j < this.particles.length; j++) {
+                this.handleCollision(this.particles[i], this.particles[j]);
+            }
+        }
+
+        this.particles.forEach(particle => {
+            // Handle repulsion from zones
+            this.handleRepulsion(particle);
+
+            // Ensure minimum velocity and add random movement
+            this.ensureParticleMovement(particle);
+
+            // Update position
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            particle.rotation += particle.rotationSpeed;
+
+            // Bounce off edges with random angle adjustment
+            if (particle.x < 0 || particle.x > this.width) {
+                particle.vx *= -0.8;
+                particle.x = particle.x < 0 ? 0 : this.width;
+                // Add slight random vertical movement when hitting sides
+                particle.vy += (Math.random() - 0.5) * 0.5;
+            }
+            if (particle.y < 0 || particle.y > this.height) {
+                particle.vy *= -0.8;
+                particle.y = particle.y < 0 ? 0 : this.height;
+                // Add slight random horizontal movement when hitting top/bottom
+                particle.vx += (Math.random() - 0.5) * 0.5;
+            }
+
+            // Smooth velocity normalization
+            const normalizeStrength = 0.99;
+            particle.vx *= normalizeStrength;
+            particle.vy *= normalizeStrength;
+
+            // Gentle pulse animation
+            particle.pulsePhase += particle.pulseSpeed;
+            const pulseFactor = 1 + Math.sin(particle.pulsePhase) * 0.08;
+            const currentSize = particle.size * pulseFactor;
+
+            // Smooth mouse interaction
+            const dx = this.mouse.x - particle.x;
+            const dy = this.mouse.y - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < 150) {
+                const force = (this.options.staticity / (distance * particle.mass)) * 0.2;
+                particle.vx -= (dx / distance) * force;
+                particle.vy -= (dy / distance) * force;
+            }
+
+            // Draw particle with shadow
+            this.drawParticle(particle);
+        });
+
+        requestAnimationFrame(() => this.animate());
+    }
+
+    ensureParticleMovement(particle) {
+        // Calculate current velocity
+        const currentSpeed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy);
+        
+        // Minimum speed threshold
+        const minSpeed = 0.3;
+        
+        // Add random movement force
+        const randomAngle = Math.random() * Math.PI * 2;
+        const randomForce = 0.03;
+        particle.vx += Math.cos(randomAngle) * randomForce;
+        particle.vy += Math.sin(randomAngle) * randomForce;
+
+        // If particle is moving too slowly, give it a boost
+        if (currentSpeed < minSpeed) {
+            const angle = Math.random() * Math.PI * 2;
+            const boostForce = 0.1;
+            particle.vx += Math.cos(angle) * boostForce;
+            particle.vy += Math.sin(angle) * boostForce;
+        }
+
+        // Apply slight random rotation
+        particle.rotationSpeed += (Math.random() - 0.5) * 0.01;
+        particle.rotationSpeed = Math.max(-0.5, Math.min(0.5, particle.rotationSpeed));
+
+        // Maximum speed limit
+        const maxSpeed = 2;
+        const newSpeed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy);
+        if (newSpeed > maxSpeed) {
+            particle.vx = (particle.vx / newSpeed) * maxSpeed;
+            particle.vy = (particle.vy / newSpeed) * maxSpeed;
+        }
+
+        // Add periodic directional change
+        if (Math.random() < 0.02) { // 2% chance each frame
+            const directionChange = (Math.random() - 0.5) * 0.5;
+            const currentAngle = Math.atan2(particle.vy, particle.vx);
+            const newAngle = currentAngle + directionChange;
+            const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy);
+            particle.vx = Math.cos(newAngle) * speed;
+            particle.vy = Math.sin(newAngle) * speed;
+        }
+    }
+
+    drawParticle(particle) {
+        this.context.save();
+        this.context.translate(particle.x, particle.y);
+        this.context.rotate(particle.rotation * Math.PI / 180);
+        
+        this.context.shadowColor = 'rgba(0, 0, 0, 0.08)';
+        this.context.shadowBlur = 12;
+        this.context.shadowOffsetX = 2;
+        this.context.shadowOffsetY = 2;
+        
+        this.context.fillStyle = this.options.color;
+        this.context.globalAlpha = particle.opacity;
+        this.context.font = `900 ${particle.size * (1 + Math.sin(particle.pulsePhase) * 0.08)}px "Font Awesome 6 Free", "Font Awesome 6 Brands"`;
+        this.context.textAlign = 'center';
+        this.context.textBaseline = 'middle';
+        this.context.fillText(this.getIconCode(particle.icon), 0, 0);
+        this.context.restore();
+
+        // Draw connecting lines
+        this.drawConnectingLines(particle);
+    }
+
+    drawConnectingLines(particle) {
+        this.particles.forEach(otherParticle => {
+            if (particle === otherParticle) return;
+            const dx = particle.x - otherParticle.x;
+            const dy = particle.y - otherParticle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 180) {
+                const lineOpacity = (0.12 - distance / 1000) * 
+                    Math.min(particle.opacity, otherParticle.opacity);
+                this.context.beginPath();
+                this.context.moveTo(particle.x, particle.y);
+                this.context.lineTo(otherParticle.x, otherParticle.y);
+                this.context.strokeStyle = `rgba(42, 42, 42, ${lineOpacity})`;
+                this.context.lineWidth = 0.8;
+                this.context.stroke();
+            }
+        });
+    }
+
+    getIconCode(iconClass) {
+        const iconMap = {
+            'fa-file-audio': 'f1c7', 'fa-music': 'f001', 'fa-microphone': 'f130',
+            'fa-comment': 'f075', 'fa-envelope': 'f0e0', 'fa-paper-plane': 'f1d8',
+            'fa-graduation-cap': 'f19d', 'fa-brain': 'f5dc', 'fa-book-reader': 'f5da',
+            'fa-lightbulb': 'f0eb', 'fa-chalkboard-teacher': 'f51c', 'fa-book-open': 'f518',
+            'fa-file-pdf': 'f1c1', 'fa-file-word': 'f1c2', 'fa-file-powerpoint': 'f1c4',
+            'fa-laptop': 'f109', 'fa-desktop': 'f108', 'fa-tablet': 'f10a'
+        };
+        return String.fromCodePoint(parseInt(iconMap[iconClass] || 'f15b', 16));
+    }
+}
+
+// Initialize particles
+document.addEventListener('DOMContentLoaded', () => {
+    new Particles({
+        quantity: 12, // Reduced quantity for better performance
+        staticity: 30,
+        ease: 30,
+        size: 70,
+        color: '#2a2a2a'
+    });
+});
+</script>
+
+<script>
+    // Icon collision system
+    class FloatingIcon {
+        constructor(element, index, total) {
+            this.element = element;
+            
+            // Distribute icons in a grid pattern initially
+            const cols = Math.ceil(Math.sqrt(total));
+            const rows = Math.ceil(total / cols);
+            const cellWidth = window.innerWidth / cols;
+            const cellHeight = window.innerHeight / rows;
+            
+            const row = Math.floor(index / cols);
+            const col = index % cols;
+            
+            // Add some randomness within the cell
+            const randomX = (Math.random() * 0.5 + 0.25) * cellWidth;
+            const randomY = (Math.random() * 0.5 + 0.25) * cellHeight;
+            
+            this.x = col * cellWidth + randomX;
+            this.y = row * cellHeight + randomY;
+            
+            // Slower initial velocities
+            this.dx = (Math.random() - 0.5) * 1;
+            this.dy = (Math.random() - 0.5) * 1;
+            this.size = 60; // Increased collision radius
+            this.updatePosition();
+        }
+
+        updatePosition() {
+            this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
+        }
+
+        move() {
+            // Add slight random movement
+            this.dx += (Math.random() - 0.5) * 0.1;
+            this.dy += (Math.random() - 0.5) * 0.1;
+            
+            // Limit maximum speed
+            const maxSpeed = 2;
+            const speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+            if (speed > maxSpeed) {
+                this.dx = (this.dx / speed) * maxSpeed;
+                this.dy = (this.dy / speed) * maxSpeed;
+            }
+
+            this.x += this.dx;
+            this.y += this.dy;
+
+            // Bounce off walls with dampening
+            if (this.x <= 0 || this.x >= window.innerWidth - this.size) {
+                this.dx *= -0.8;
+                this.x = this.x <= 0 ? 0 : window.innerWidth - this.size;
+            }
+            if (this.y <= 0 || this.y >= window.innerHeight - this.size) {
+                this.dy *= -0.8;
+                this.y = this.y <= 0 ? 0 : window.innerHeight - this.size;
+            }
+
+            this.updatePosition();
+        }
+
+        checkCollision(other) {
+            const dx = this.x - other.x;
+            const dy = this.y - other.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < this.size) {
+                // Add repulsion force
+                const angle = Math.atan2(dy, dx);
+                const force = (this.size - distance) * 0.05;
+                
+                this.dx += Math.cos(angle) * force;
+                this.dy += Math.sin(angle) * force;
+                other.dx -= Math.cos(angle) * force;
+                other.dy -= Math.sin(angle) * force;
+
+                // Visual feedback
+                this.element.classList.add('collision');
+                other.element.classList.add('collision');
+
+                setTimeout(() => {
+                    this.element.classList.remove('collision');
+                    other.element.classList.remove('collision');
+                }, 500);
+            }
+        }
+    }
+
+    // Initialize floating icons with grid distribution
+    const iconElements = document.querySelectorAll('.bg-icon');
+    const floatingIcons = Array.from(iconElements).map((el, index) => 
+        new FloatingIcon(el, index, iconElements.length)
+    );
+
+    function animate() {
+        floatingIcons.forEach(icon => icon.move());
+
+        // Check collisions
+        for (let i = 0; i < floatingIcons.length; i++) {
+            for (let j = i + 1; j < floatingIcons.length; j++) {
+                floatingIcons[i].checkCollision(floatingIcons[j]);
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    // Start animation
+    animate();
+</script>
+
+{% endblock %}

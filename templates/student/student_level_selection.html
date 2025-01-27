@@ -1,0 +1,708 @@
+﻿{% extends 'student/student_base.html' %}
+
+{% block title %}Magic English Adventure - Lyra AI{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Bubblegum+Sans&display=swap" rel="stylesheet">
+<style>
+    .adventure-container {
+        min-height: calc(100vh - var(--nav-height));
+        padding: calc(var(--nav-height) + 2rem) 2rem 2rem;
+        background: #f0f9ff url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="%23e2e8f0" stroke-width="0.5"><path d="M10,10 l80,0 m-80,20 l80,0 m-80,20 l80,0 m-80,20 l80,0"/></svg>') repeat;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .notebook-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 20% 20%, rgba(147, 197, 253, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(251, 146, 60, 0.1) 0%, transparent 50%);
+        z-index: 1;
+    }
+
+    .floating-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .floating-element {
+        position: absolute;
+        font-size: 2rem;
+        opacity: 0.15;
+        animation: float 20s infinite linear;
+        color: #4B0082;
+    }
+
+    .mascot {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 120px;
+        height: 120px;
+        z-index: 10;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+        .mascot:hover {
+            transform: scale(1.1);
+        }
+
+    .mascot-bubble {
+        position: absolute;
+        top: -80px;
+        right: 0;
+        background: white;
+        padding: 1rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        font-family: 'Comic Neue', cursive;
+        font-size: 0.9rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+        width: 200px;
+    }
+
+    .mascot:hover .mascot-bubble {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @keyframes float {
+        0% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+
+        33% {
+            transform: translate(30px, -30px) rotate(120deg);
+        }
+
+        66% {
+            transform: translate(-20px, 20px) rotate(240deg);
+        }
+
+        100% {
+            transform: translate(0, 0) rotate(360deg);
+        }
+    }
+
+    .adventure-content {
+        position: relative;
+        z-index: 3;
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .adventure-title {
+        font-family: 'Bubblegum Sans', cursive;
+        font-size: 3.5rem;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        animation: bounceIn 1s ease-out;
+        text-shadow: 3px 3px 0px rgba(75, 0, 130, 0.2);
+    }
+
+    .adventure-subtitle {
+        font-family: 'Comic Neue', cursive;
+        font-size: 1.8rem;
+        color: #4a5568;
+        margin-bottom: 3rem;
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .level-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 1rem;
+    }
+
+    .level-card {
+        background: white;
+        border-radius: 30px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        animation: fadeIn 1s ease-out;
+        border: 4px solid transparent;
+    }
+
+        .level-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(75, 0, 130, 0.2);
+        }
+
+        .level-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+            z-index: 1;
+        }
+
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%) rotate(45deg);
+        }
+
+        100% {
+            transform: translateX(100%) rotate(45deg);
+        }
+    }
+
+    .level-icon {
+        position: relative;
+        z-index: 2;
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #4B0082, #00BFFF);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .level-title {
+        font-family: 'Bubblegum Sans', cursive;
+        font-size: 2rem;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .level-description {
+        font-family: 'Comic Neue', cursive;
+        color: #4a5568;
+        font-size: 1.2rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .level-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, #4B0082, #00BFFF);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-family: 'Comic Neue', cursive;
+        font-size: 1rem;
+        font-weight: bold;
+        transform: rotate(5deg);
+        z-index: 2;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: var(--color);
+        opacity: 0;
+    }
+
+    .submit-btn {
+        margin-top: 2rem;
+        padding: 1.2rem 3.5rem;
+        font-size: 1.4rem;
+        font-family: 'Bubblegum Sans', cursive;
+        color: white;
+        background: linear-gradient(135deg, #4B0082, #00BFFF);
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        opacity: 0;
+        transform: translateY(20px);
+        box-shadow: 0 5px 15px rgba(75, 0, 130, 0.3);
+    }
+
+        .submit-btn.visible {
+            opacity: 1;
+            transform: translateY(0);
+            animation: pulse 2s infinite;
+        }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 10px 20px rgba(75, 0, 130, 0.4);
+    }
+
+    @keyframes bounceIn {
+        0% {
+            transform: scale(0.3);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        70% {
+            transform: scale(0.9);
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .particles-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .particle {
+        position: absolute;
+        background: linear-gradient(135deg, #4B0082, #00BFFF);
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0.1;
+    }
+
+    .magic-circle {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0.1;
+        background: radial-gradient(circle, rgba(75, 0, 130, 0.2) 0%, rgba(0, 191, 255, 0.1) 50%, transparent 70% );
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: all 0.3s ease;
+    }
+
+    .floating-bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.1) );
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .sparkle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: white;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+    }
+
+    .magic-trail {
+        position: fixed;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .trail-particle {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        background: linear-gradient(135deg, #4B0082, #00BFFF);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .interactive-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .bg-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(75, 0, 130, 0.05) 0%, rgba(0, 191, 255, 0.05) 50%, transparent 70% );
+        transform: translate(-50%, -50%);
+        transition: all 0.5s ease;
+    }
+
+    @media (max-width: 768px) {
+        .adventure-title {
+            font-size: 2.8rem;
+        }
+
+        .adventure-subtitle {
+            font-size: 1.4rem;
+        }
+
+        .level-cards {
+            grid-template-columns: 1fr;
+            padding: 0.5rem;
+        }
+
+        .mascot {
+            width: 80px;
+            height: 80px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="adventure-container">
+    <div class="notebook-overlay"></div>
+    <div class="floating-elements">
+        <i class="fas fa-book floating-element" style="top: 15%; left: 10%; animation-duration: 18s;"></i>
+        <i class="fas fa-pencil-alt floating-element" style="top: 25%; right: 15%; animation-duration: 22s;"></i>
+        <i class="fas fa-graduation-cap floating-element" style="bottom: 20%; left: 20%; animation-duration: 20s;"></i>
+        <span class="floating-element" style="top: 40%; right: 25%; animation-duration: 25s;">A</span>
+        <span class="floating-element" style="bottom: 35%; left: 30%; animation-duration: 23s;">B</span>
+        <span class="floating-element" style="top: 60%; right: 10%; animation-duration: 21s;">C</span>
+        <i class="fas fa-star floating-element" style="top: 30%; left: 40%; animation-duration: 19s;"></i>
+        <i class="fas fa-lightbulb floating-element" style="bottom: 25%; right: 35%; animation-duration: 24s;"></i>
+    </div>
+
+    <div class="adventure-content">
+        <h1 class="adventure-title">Welcome to English Wonderland!</h1>
+        <p class="adventure-subtitle">Choose your magical path and begin an amazing journey with Lyra AI</p>
+
+        {% if error %}
+        <p style="color: #e53e3e; margin-bottom: 2rem; font-family: 'Comic Neue', cursive;">{{ error }}</p>
+        {% endif %}
+
+        <form method="post" id="levelForm">
+            {% csrf_token %}
+            <div class="level-cards">
+                <label class="level-card" onclick="selectLevel('beginner')">
+                    <input type="radio" name="level" value="beginner" class="hidden-radio" required>
+                    <div class="level-badge">Start Here!</div>
+                    <div class="level-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h2 class="level-title">Beginner Explorer</h2>
+                    <p class="level-description">Start your adventure here! Perfect for young explorers beginning their English journey.</p>
+                </label>
+
+                <label class="level-card" onclick="selectLevel('intermediate')">
+                    <input type="radio" name="level" value="intermediate" class="hidden-radio" required>
+                    <div class="level-badge">Level Up!</div>
+                    <div class="level-icon">
+                        <i class="fas fa-book-reader"></i>
+                    </div>
+                    <h2 class="level-title">Brave Adventurer</h2>
+                    <p class="level-description">Ready for bigger quests? Join other brave adventurers in exciting challenges!</p>
+                </label>
+
+                <label class="level-card" onclick="selectLevel('advanced')">
+                    <input type="radio" name="level" value="advanced" class="hidden-radio" required>
+                    <div class="level-badge">Master!</div>
+                    <div class="level-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <h2 class="level-title">Language Master</h2>
+                    <p class="level-description">For brave wizards ready to master the most powerful English spells!</p>
+                </label>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Begin My Adventure! ✨</button>
+        </form>
+    </div>
+
+    <div class="mascot">
+        <div class="mascot-bubble">Hi! I'm Lyra, your magical guide! Click on your preferred level to start our adventure together! 🌟</div>
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234B0082'/%3E%3Ccircle cx='40' cy='40' r='8' fill='white'/%3E%3Ccircle cx='60' cy='40' r='8' fill='white'/%3E%3Cpath d='M35,60 Q50,70 65,60' stroke='white' stroke-width='3' fill='none'/%3E%3C/svg%3E" alt="Lyra Assistant">
+    </div>
+</div>
+
+<script>
+    // Create particles
+    function createParticles() {
+        const container = document.createElement('div');
+        container.className = 'particles-container';
+        document.body.appendChild(container);
+
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.width = Math.random() * 5 + 'px';
+            particle.style.height = particle.style.width;
+
+            const startX = Math.random() * window.innerWidth;
+            const startY = Math.random() * window.innerHeight;
+
+            particle.style.left = startX + 'px';
+            particle.style.top = startY + 'px';
+
+            container.appendChild(particle);
+
+            animateParticle(particle);
+        }
+    }
+
+    function animateParticle(particle) {
+        const duration = 15000 + Math.random() * 10000;
+        const xMove = Math.random() * 100 - 50;
+        const yMove = Math.random() * 100 - 50;
+
+        particle.animate([
+            { transform: 'translate(0, 0) rotate(0deg)', opacity: 0.1 },
+            { transform: translate(${ xMove }px, ${ yMove }px) rotate(360deg), opacity: 0.2 },
+            { transform: 'translate(0, 0) rotate(720deg)', opacity: 0.1 }
+        ], {
+            duration: duration,
+            iterations: Infinity,
+            easing: 'ease-in-out'
+        });
+    }
+
+    // Create floating bubbles
+    function createBubbles() {
+        const container = document.querySelector('.adventure-container');
+        for (let i = 0; i < 20; i++) {
+            const bubble = document.createElement('div');
+            bubble.className = 'floating-bubble';
+            const size = Math.random() * 30 + 10;
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+
+            const startX = Math.random() * window.innerWidth;
+            const startY = Math.random() * window.innerHeight;
+
+            bubble.style.left = startX + 'px';
+            bubble.style.top = startY + 'px';
+
+            container.appendChild(bubble);
+
+            animateBubble(bubble);
+        }
+    }
+
+    function animateBubble(bubble) {
+        const duration = 20000 + Math.random() * 10000;
+        const xMove = Math.random() * 100 - 50;
+        const yMove = -100 - Math.random() * 100;
+
+        bubble.animate([
+            { transform: 'translate(0, 0)', opacity: 0.2 },
+            { transform: translate(${ xMove }px, ${ yMove }px), opacity: 0 }
+        ], {
+            duration: duration,
+            iterations: Infinity,
+            easing: 'ease-in-out'
+        });
+    }
+
+    // Interactive background circles
+    function createInteractiveBG() {
+        const container = document.createElement('div');
+        container.className = 'interactive-bg';
+        document.body.appendChild(container);
+
+        for (let i = 0; i < 5; i++) {
+            const circle = document.createElement('div');
+            circle.className = 'bg-circle';
+            const size = Math.random() * 300 + 200;
+            circle.style.width = size + 'px';
+            circle.style.height = size + 'px';
+            container.appendChild(circle);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            const circles = document.querySelectorAll('.bg-circle');
+            circles.forEach((circle, index) => {
+                const speed = 0.1 - (index * 0.02);
+                const x = e.clientX * speed;
+                const y = e.clientY * speed;
+                circle.style.transform = translate(${ x }px, ${ y }px);
+            });
+        });
+    }
+
+    // Magic circle following cursor
+    function createMagicCircle() {
+        const circle = document.createElement('div');
+        circle.className = 'magic-circle';
+        document.body.appendChild(circle);
+
+        document.addEventListener('mousemove', (e) => {
+            circle.style.left = e.clientX + 'px';
+            circle.style.top = e.clientY + 'px';
+            createSparkle(e.clientX, e.clientY);
+        });
+    }
+
+    // Create sparkles
+    function createSparkle(x, y) {
+        if (Math.random() > 0.2) return; // Only create sparkles sometimes
+
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = x + 'px';
+        sparkle.style.top = y + 'px';
+        document.body.appendChild(sparkle);
+
+        sparkle.animate([
+            { transform: 'translate(0, 0) scale(1)', opacity: 0.8 },
+            { transform: translate(${ Math.random() * 50 - 25 }px, ${- 20 - Math.random() * 30}px) scale(0), opacity: 0
+    }
+    ], {
+        duration: 1000,
+            easing: 'ease-out',
+                fill: 'forwards'
+    }).onfinish = () => sparkle.remove();
+}
+
+    // Magic trail effect
+    let trail = [];
+    const maxTrail = 20;
+
+    function createTrailParticle(x, y) {
+        const particle = document.createElement('div');
+        particle.className = 'trail-particle';
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        document.body.appendChild(particle);
+
+        trail.push({
+            element: particle,
+            x: x,
+            y: y,
+            alpha: 1
+        });
+
+        if (trail.length > maxTrail) {
+            const removed = trail.shift();
+            removed.element.remove();
+        }
+    }
+
+    function updateTrail() {
+        trail.forEach((particle, index) => {
+            particle.alpha = (index / maxTrail);
+            particle.element.style.opacity = particle.alpha;
+        });
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        createTrailParticle(e.clientX, e.clientY);
+        updateTrail();
+    });
+
+    // Initialize all effects
+    document.addEventListener('DOMContentLoaded', () => {
+        createParticles();
+        createBubbles();
+        createInteractiveBG();
+        createMagicCircle();
+    });
+
+    // Create confetti effect
+    function createConfetti(x, y) {
+        const colors = ['#4B0082', '#00BFFF', '#FFD700', '#FF69B4'];
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.setProperty('--color', colors[Math.floor(Math.random() * colors.length)]);
+            confetti.style.left = x + 'px';
+            confetti.style.top = y + 'px';
+            document.body.appendChild(confetti);
+
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = 5 + Math.random() * 5;
+            const tx = Math.cos(angle) * 100 * (Math.random() + 0.5);
+            const ty = Math.sin(angle) * 100 * (Math.random() + 0.5);
+
+            confetti.animate([
+                { transform: 'translate(0, 0) rotate(0deg)', opacity: 1 },
+                { transform: translate(${ tx }px, ${ ty }px) rotate(${ Math.random() * 360 }deg), opacity: 0
+        }
+        ], {
+            duration: 1000 + Math.random() * 1000,
+                easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    fill: 'forwards'
+        }).onfinish = () => confetti.remove();
+    }
+}
+
+    function selectLevel(level) {
+        // Play selection sound
+        const audio = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgA');
+        audio.volume = 0.3;
+        audio.play().catch(() => { }); // Ignore if browser blocks autoplay
+
+        // Show submit button with animation
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.classList.add('visible');
+
+        // Add selected state to cards
+        const cards = document.querySelectorAll('.level-card');
+        cards.forEach(card => {
+            const input = card.querySelector('input');
+            if (input.value === level) {
+                card.style.borderColor = '#4B0082';
+                card.style.boxShadow = '0 20px 40px rgba(75, 0, 130, 0.2)';
+                // Create confetti at card position
+                const rect = card.getBoundingClientRect();
+                createConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            } else {
+                card.style.borderColor = 'transparent';
+                card.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.1)';
+            }
+        });
+    }
+</script>
+{% endblock %}

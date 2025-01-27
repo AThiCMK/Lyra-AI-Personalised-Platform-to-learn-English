@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lyra AI{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nav-height: 5rem;
+            --primary-color: #6366f1;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --border-color: #30363d;
+            --success-color: #238636;
+            --card-bg: rgba(22, 27, 34, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            overflow-x: hidden;
+            position: relative;
+            margin: 0;
+        }
+
+        .nav-bar {
+            display: none; /* Hidden by default */
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0 2rem; /* Removed vertical padding */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Show navbar only on login and register pages */
+        body.auth-page .nav-bar {
+            display: flex;
+        }
+
+        .nav-brand {
+            font-size: 2rem;
+            font-weight: 800;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-left: 1rem;
+            background: linear-gradient(135deg,
+                #4B0082 0%,      /* Deep Purple */
+                #6A0DAD 20%,     /* Royal Purple */
+                #483D8B 40%,     /* Dark Slate Blue */
+                #0000CD 60%,     /* Medium Blue */
+                #0066CC 80%,     /* Strong Blue */
+                #00BFFF 100%     /* Deep Sky Blue */
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-brand i {
+            font-size: 1.75rem;
+            background: linear-gradient(135deg, #4B0082, #00BFFF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .nav-bar {
+                padding: 0 1rem;
+            }
+
+            .nav-brand {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Main Content Padding for Fixed Navbar */
+        .main-content {
+            padding-top: 0; /* No padding when navbar is hidden */
+        }
+
+        body.auth-page .main-content {
+            padding-top: var(--nav-height); /* Add padding when navbar is shown */
+        }
+    </style>
+    {% block extra_styles %}{% endblock %}
+</head>
+<body class="{% if request.path in '/login/,/student/register/,/faculty/register/' %}auth-page{% endif %}">
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                Lyra AI
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

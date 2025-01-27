@@ -1,0 +1,452 @@
+﻿{% extends 'faculty/faculty_base.html' %}
+
+{% block faculty_content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    :root {
+        --bg-color: #f5f5f5;
+        --primary: #1a1a1a;
+        --secondary: #4a4a4a;
+        --text-primary: #000000;
+        --border-color: #e0e0e0;
+        --accent: #3498db;
+        --gradient-start: #2c3e50;
+        --gradient-end: #3498db;
+        --glow-color: rgba(52, 152, 219, 0.3);
+        --particle-color: rgba(52, 152, 219, 0.2);
+    }
+
+    body {
+        margin: 0;
+        padding: 0 !important;
+        min-height: 100vh;
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(145deg, #f5f5f5 0%, #e8e8e8 100%);
+        color: var(--primary);
+        overflow: hidden;
+    }
+
+    @keyframes gradientText {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes glowPulse {
+        0% { text-shadow: 0 0 5px rgba(52, 152, 219, 0); }
+        50% { text-shadow: 0 0 20px rgba(52, 152, 219, 0.5); }
+        100% { text-shadow: 0 0 5px rgba(52, 152, 219, 0); }
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    @keyframes ripple {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(2); opacity: 0; }
+    }
+
+    @keyframes typing {
+        from { width: 0; }
+        to { width: 100%; }
+    }
+
+    @keyframes countUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes iconPop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+
+    @keyframes wave {
+        0% { transform: translateY(0px); }
+        25% { transform: translateY(-5px); }
+        50% { transform: translateY(0px); }
+        75% { transform: translateY(5px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .meteor-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+    }
+
+    .meteor {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        background: transparent;
+        pointer-events: none;
+    }
+
+    .meteor::before {
+        content: '';
+        position: absolute;
+        width: 100px;
+        height: 1px;
+        background: linear-gradient(90deg, #ffffff, transparent);
+        transform-origin: left;
+        animation: meteor linear;
+        animation-duration: var(--duration);
+        border-radius: 100%;
+    }
+
+    .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: var(--particle-color);
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        animation: ripple 1s ease-out;
+    }
+
+    .content-area {
+        padding: 3rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 6rem);
+        text-align: center;
+        perspective: 1000px;
+    }
+
+    .welcome-text {
+        font-size: 3.5rem;
+        font-weight: 700;
+        background: linear-gradient(120deg, var(--gradient-start), var(--gradient-end));
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradientText 5s ease infinite, fadeInUp 1s ease-out;
+        margin-bottom: 3rem;
+        letter-spacing: 1px;
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .welcome-text::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+        transition: width 0.3s ease;
+    }
+
+    .welcome-text:hover::after {
+        width: 100%;
+    }
+
+    .info-container {
+        transform-style: preserve-3d;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .info-item {
+        margin: 1.5rem 0;
+        font-size: 1.4rem;
+        color: var(--secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        animation: scaleIn 0.5s ease-out backwards;
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .info-item:hover {
+        transform: translateY(-5px) rotateX(10deg);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--primary);
+        opacity: 0.9;
+    }
+
+    .info-value {
+        color: var(--accent);
+        font-weight: 500;
+        position: relative;
+    }
+
+    .info-value::before {
+        display: none;
+    }
+
+    .students-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 3rem;
+        font-size: 1.6rem;
+        color: var(--secondary);
+        gap: 1.5rem;
+        padding: 1.5rem 3rem;
+        border-radius: 50px;
+        background: linear-gradient(120deg, 
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.2),
+            rgba(255, 255, 255, 0.1)
+        );
+        background-size: 200% 100%;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        animation: shimmer 3s infinite linear;
+    }
+
+    .students-info:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 10px 20px rgba(52, 152, 219, 0.2),
+            0 0 30px rgba(52, 152, 219, 0.1);
+        animation: none;
+    }
+
+    .students-icon {
+        color: var(--accent);
+        font-size: 2rem;
+        animation: iconPop 2s infinite ease-in-out;
+        transform-origin: center;
+    }
+
+    .students-info:hover .students-icon {
+        animation: wave 1s infinite ease-in-out;
+    }
+
+    .student-count {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .count-number {
+        font-weight: 700;
+        color: var(--accent);
+        font-size: 2.2rem;
+        position: relative;
+        display: inline-block;
+        animation: countUp 0.5s ease-out;
+    }
+
+    .count-number::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--accent);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+        transform-origin: left;
+    }
+
+    .students-info:hover .count-number::after {
+        transform: scaleX(1);
+    }
+
+    .count-text {
+        font-weight: 500;
+        background: linear-gradient(120deg, var(--gradient-start), var(--gradient-end));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: fadeInUp 0.5s ease-out 0.2s backwards;
+    }
+
+    @media (max-width: 768px) {
+        .content-area {
+            padding: 2rem 1rem;
+        }
+
+        .welcome-text {
+            font-size: 2.5rem;
+        }
+
+        .info-item {
+            font-size: 1.2rem;
+        }
+
+        .students-info {
+            padding: 1.2rem 2rem;
+            font-size: 1.4rem;
+        }
+
+        .students-icon {
+            font-size: 1.6rem;
+        }
+
+        .count-number {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+
+<div class="meteor-container" id="meteorContainer"></div>
+
+<div class="content-area" id="contentArea">
+    <h1 class="welcome-text" id="welcomeText">Welcome, {{ request.user.username}}</h1>
+    
+    <div class="info-container">
+        <div class="info-item">
+            <span class="info-label">Staff ID</span>
+            <span class="info-value">{{ request.user.staff_id }}</span>
+        </div>
+
+        <div class="info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ request.user.email }}</span>
+        </div>
+    </div>
+
+    <div class="students-info" id="studentsInfo">
+        <i class="fas fa-users students-icon"></i>
+        <div class="student-count">
+            <span class="count-number">{{ enrolled_students_count }}</span>
+            <span class="count-text">Students Enrolled</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function createMeteors(number = 30) {
+        const container = document.getElementById('meteorContainer');
+        
+        for (let i = 0; i < number; i++) {
+            const meteor = document.createElement('div');
+            meteor.className = 'meteor';
+            
+            meteor.style.left = Math.random() * 100 + '%';
+            meteor.style.top = Math.random() * 100 + '%';
+            
+            const duration = (Math.random() * 4 + 2) + 's';
+            meteor.style.setProperty('--duration', duration);
+            
+            container.appendChild(meteor);
+            
+            meteor.addEventListener('animationend', () => {
+                meteor.remove();
+                createMeteors(1);
+            });
+        }
+    }
+
+    window.addEventListener('load', () => {
+        createMeteors(30);
+    });
+
+    document.addEventListener('click', function(e) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        particle.style.left = e.pageX + 'px';
+        particle.style.top = e.pageY + 'px';
+        
+        document.body.appendChild(particle);
+        
+        particle.addEventListener('animationend', function() {
+            particle.remove();
+        });
+    });
+
+    const welcomeText = document.getElementById('welcomeText');
+    welcomeText.addEventListener('mouseover', function() {
+        this.style.transform = 'scale(1.05)';
+    });
+    welcomeText.addEventListener('mouseout', function() {
+        this.style.transform = 'scale(1)';
+    });
+
+    const infoItems = document.querySelectorAll('.info-item');
+    infoItems.forEach(item => {
+        item.addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const xc = rect.width / 2;
+            const yc = rect.height / 2;
+            
+            const dx = x - xc;
+            const dy = y - yc;
+            
+            this.style.transform = `rotateY(${dx / 20}deg) rotateX(${-dy / 20}deg)`;
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'rotateY(0) rotateX(0)';
+        });
+    });
+
+    const studentsInfo = document.getElementById('studentsInfo');
+    setInterval(() => {
+        studentsInfo.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            studentsInfo.style.transform = 'scale(1)';
+        }, 200);
+    }, 5000);
+</script>
+{% endblock %}

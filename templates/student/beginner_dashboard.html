@@ -1,0 +1,31 @@
+﻿{% extends "student/student_base.html" %}
+
+{% block title %}Beginner Dashboard{% endblock %}
+
+{% block content %}
+<h1>Welcome to the Beginner Dashboard, {{ student.user }}</h1>
+<p>Welcome to the Beginner Level. Below are your Reading and Listening tasks.</p>
+
+<h2>Reading Tasks</h2>
+<ul>
+    {% for test in reading_tests %}
+    <li>
+        Level {{ test.level }} -
+        {% if test.status == "completed" %}
+        Submitted
+        {% else %}
+        <a href="{% url 'reading_test_view' test.category test.level %}">Take Test</a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+
+<h2>Listening Tasks</h2>
+<ul>
+    {% for test in listening_tests %}
+    <li>
+        Level {{ test.level }} -
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

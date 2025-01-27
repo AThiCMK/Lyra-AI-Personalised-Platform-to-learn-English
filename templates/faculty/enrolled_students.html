@@ -1,0 +1,351 @@
+﻿{% extends 'faculty/faculty_base.html' %}
+
+{% block faculty_content %}
+<style>
+    :root {
+        --bg-color: #f8f9fa;
+        --primary: #2c3e50;
+        --secondary: #34495e;
+        --accent: #3498db;
+        --text-primary: #2c3e50;
+        --card-bg: rgba(255, 255, 255, 0.95);
+        --border-color: #e0e0e0;
+        --shadow-color: rgba(0, 0, 0, 0.08);
+        --hover-bg: rgba(52, 152, 219, 0.05);
+    }
+
+    body {
+        margin: 0;
+        padding: 0 !important;
+        min-height: 100vh;
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: var(--text-primary);
+    }
+
+    .students-container {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 2.5rem;
+        margin: 2.5rem auto;
+        max-width: 1100px;
+        box-shadow: 0 10px 30px var(--shadow-color);
+        border: 1px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header {
+        text-align: center;
+        color: var(--primary);
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+
+    .page-header::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 4px;
+        background: var(--accent);
+        margin: 10px auto 0;
+        border-radius: 2px;
+    }
+
+    .students-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1rem;
+    }
+
+    table {
+        width: 100%;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    thead {
+        background: var(--primary);
+    }
+
+    th {
+        color: white;
+        font-weight: 600;
+        text-align: left;
+        padding: 1.2rem 1.5rem;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    th:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    td {
+        padding: 1.2rem 1.5rem;
+        color: var(--secondary);
+        border-bottom: 1px solid var(--border-color);
+        font-size: 1rem;
+    }
+
+    tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    tbody tr:hover {
+        background: var(--hover-bg);
+        transform: translateX(5px);
+    }
+
+    .empty-message {
+        text-align: center;
+        color: var(--secondary);
+        padding: 3rem;
+        font-size: 1.2rem;
+        background: var(--hover-bg);
+        border-radius: 12px;
+        margin: 1rem 0;
+    }
+
+    .student-count {
+        text-align: right;
+        color: var(--secondary);
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        padding-right: 1rem;
+    }
+
+    .search-container {
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 0.8rem 1.2rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+        color: var(--text-primary);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .search-input::placeholder {
+        color: #95a5a6;
+    }
+
+    .sort-icon {
+        display: inline-block;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .sort-icon.active {
+        color: var(--accent);
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 2rem;
+        color: var(--secondary);
+        background: var(--hover-bg);
+        border-radius: 8px;
+        margin-top: 1rem;
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .students-container {
+            margin: 1rem;
+            padding: 1.5rem;
+        }
+
+        th, td {
+            padding: 1rem;
+        }
+
+        .page-header {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+        }
+
+        tbody tr:hover {
+            transform: none;
+        }
+
+        .search-container {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .students-container {
+        animation: fadeIn 0.6s ease-out;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="students-container">
+                <h1 class="page-header">Enrolled Students</h1>
+                
+                {% if students %}
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by name or roll number...">
+                </div>
+                {% endif %}
+
+                <div class="students-table">
+                    {% if students %}
+                    <table id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th data-sort="name">Name <span class="sort-icon">↕</span></th>
+                                <th data-sort="roll">Roll Number <span class="sort-icon">↕</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.user }}</td>
+                                <td>{{ student.roll_number }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="student-count">
+                        Total Students: <span id="studentCount">{{ students|length }}</span>
+                    </div>
+                    <div class="no-results">
+                        <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                        No students found matching your search.
+                    </div>
+                    {% else %}
+                    <div class="empty-message">
+                        <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                        No students enrolled yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const table = document.getElementById('studentsTable');
+    const noResults = document.querySelector('.no-results');
+    const studentCountElement = document.getElementById('studentCount');
+    let sortDirections = {
+        name: 'none',
+        roll: 'none'
+    };
+
+    if (!table) return;
+
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    const headers = table.querySelectorAll('th');
+
+    // Search functionality
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const name = row.cells[0].textContent.toLowerCase();
+            const rollNumber = row.cells[1].textContent.toLowerCase();
+            const matches = name.includes(searchTerm) || rollNumber.includes(searchTerm);
+            
+            row.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        // Update student count and show/hide no results message
+        studentCountElement.textContent = visibleCount;
+        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+        table.style.display = visibleCount === 0 ? 'none' : '';
+    }
+
+    // Sorting functionality
+    function sortTable(column, direction) {
+        const sortedRows = rows.sort((a, b) => {
+            const aValue = a.cells[column].textContent.toLowerCase();
+            const bValue = b.cells[column].textContent.toLowerCase();
+            
+            if (direction === 'asc') {
+                return aValue.localeCompare(bValue);
+            } else {
+                return bValue.localeCompare(aValue);
+            }
+        });
+
+        // Clear table body
+        while (table.tBodies[0].firstChild) {
+            table.tBodies[0].removeChild(table.tBodies[0].firstChild);
+        }
+
+        // Add sorted rows
+        sortedRows.forEach(row => table.tBodies[0].appendChild(row));
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', filterTable);
+
+    headers.forEach(header => {
+        header.addEventListener('click', () => {
+            const column = header.getAttribute('data-sort');
+            const columnIndex = column === 'name' ? 0 : 1;
+
+            // Update sort direction
+            if (sortDirections[column] === 'none' || sortDirections[column] === 'desc') {
+                sortDirections[column] = 'asc';
+                header.querySelector('.sort-icon').textContent = '↑';
+            } else {
+                sortDirections[column] = 'desc';
+                header.querySelector('.sort-icon').textContent = '↓';
+            }
+
+            // Reset other headers
+            headers.forEach(h => {
+                if (h !== header) {
+                    h.querySelector('.sort-icon').textContent = '↕';
+                    sortDirections[h.getAttribute('data-sort')] = 'none';
+                }
+            });
+
+            sortTable(columnIndex, sortDirections[column]);
+        });
+    });
+});
+</script>
+
+{% endblock %}
